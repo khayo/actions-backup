@@ -1,0 +1,46 @@
+name: 'Backup Action'
+description: 'Backup dos arquivos de sistema modelo antigo'
+author: 'Khayo Vannucci <khayovannucci@gmail.com>'
+version: v1
+inputs:
+  BACKUP_MOUNT_POINT:
+    description: 'O ponto de montagem para o backup.'
+    required: true
+  SERVIDOR:
+    description: 'O servidor de backup.'
+    required: true
+  ADMIN_USER:
+    description: 'O nome de usuário para autenticação.'
+    required: true
+  ADMIN_PASS:
+    description: 'A senha para autenticação.'
+    required: true
+  MOUNT_POINT:
+    description: 'O ponto de montagem do servidor.'
+    required: true
+  PROJECT:
+    description: 'O projeto para fazer backup.'
+    required: true
+  TIPO:
+    description: 'O tipo de backup.'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  entrypoint: '/bin/sh -c'
+  commands:
+    - |
+      mkdir $BACKUP_MOUNT_POINT
+      mount -t cifs //$SERVIDOR/backup $BACKUP_MOUNT_POINT -o username=$ADMIN_USER,password=$ADMIN_PASS,uid=$(id -u),gid=$(id -g)
+
+      mkdir $MOUNT_POINT
+      mount -t cifs //$SERVIDOR/sites $MOUNT_POINT -o username=$ADMIN_USER,password=$ADMIN_PASS,uid=$(id -u),gid=$(id -g)
+      
+      if [ "$(ls -A $MOUNT_POINT/$PROJECT)" ]; then
+        current_date=$(date +"%Y%m%d_%H%M")
+        nomepasta="${current_date}_${PROJECT}"
+        mkdir $BACKUP_MOUNT_POINT/$nomepasta && cp -r $MOUNT_POINT/$PROJECT/* "$_"
+      else
+        echo "A pasta está vazia, pulando a etapa de backup."
+      fi
+
