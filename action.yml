@@ -21,9 +21,6 @@ inputs:
   PROJECT:
     description: 'O projeto para fazer backup.'
     required: true
-  TIPO:
-    description: 'O tipo de backup.'
-    required: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
